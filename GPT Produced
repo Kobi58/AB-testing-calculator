@@ -1,0 +1,56 @@
+<html>
+<head>
+	<title>A/B Test Calculator</title>
+	<script>
+		function calculate() {
+			var monthlyConversions = parseInt(document.getElementById('monthlyConversions').value);
+			var significanceLevel = parseFloat(document.getElementById('significanceLevel').value);
+			var minimumDetectableEffect = parseFloat(document.getElementById('minimumDetectableEffect').value);
+
+			var requiredSampleSize = calculateRequiredSampleSize(monthlyConversions, significanceLevel, minimumDetectableEffect);
+			var monthlyVisitors = parseInt(document.getElementById('monthlyVisitors').value);
+			var testDuration = Math.ceil(requiredSampleSize / (monthlyVisitors * 2));
+
+			document.getElementById('requiredSampleSize').innerHTML = requiredSampleSize.toLocaleString();
+			document.getElementById('testDuration').innerHTML = testDuration.toLocaleString();
+		}
+
+		function calculateRequiredSampleSize(monthlyConversions, significanceLevel, minimumDetectableEffect) {
+			var zScore = getZScore(significanceLevel);
+			var baselineConversionRate = monthlyConversions / getMonthlyVisitors();
+
+			var requiredSampleSize = (2 * Math.pow(zScore + getZScore(1 - minimumDetectableEffect), 2) * (baselineConversionRate * (1 - baselineConversionRate))) / Math.pow(minimumDetectableEffect * baselineConversionRate, 2);
+
+			return Math.ceil(requiredSampleSize);
+		}
+
+		function getMonthlyVisitors() {
+			return parseInt(document.getElementById('monthlyVisitors').value);
+		}
+
+		function getZScore(percentile) {
+			var zScores = {
+				"90": 1.645,
+				"95": 1.96,
+				"99": 2.576
+			};
+
+			return zScores[percentile.toString()];
+		}
+	</script>
+</head>
+<body>
+	<h1>A/B Test Calculator</h1>
+	<p>
+		Monthly Conversions: <input type="number" id="monthlyConversions" value="500"><br>
+		Monthly Visitors: <input type="number" id="monthlyVisitors" value="10000"><br>
+		Significance Level: <input type="number" id="significanceLevel" value="95"> %<br>
+		Minimum Detectable Effect: <input type="number" id="minimumDetectableEffect" value="10"> %<br>
+		<button onclick="calculate()">Calculate</button>
+	</p>
+	<p>
+		Required Sample Size: <span id="requiredSampleSize"></span><br>
+		Test Duration: <span id="testDuration"></span> months
+	</p>
+</body>
+</html>
